@@ -1,7 +1,11 @@
-"""读取 channels.json，抓取各节目的 RSS，生成 playlist.js 供 index.html 直接播放。
+"""生成网页用的数据文件。
+
+- channels.json + audio/<节目名>/*.mp3  ->  playlist.js
+- courses/<场景名>.txt                  ->  custom_courses.js
 
 用法：python update_playlist.py   （建议每周运行一次拿到新节目）
 """
+import hashlib
 import json
 import re
 import sys
@@ -10,11 +14,16 @@ import xml.etree.ElementTree as ET
 from datetime import datetime
 from email.utils import parsedate_to_datetime
 from pathlib import Path
+from urllib.parse import quote
 
 PER_CHANNEL = 40
 ITUNES = "{http://www.itunes.com/dtds/podcast-1.0.dtd}"
 
-CHANNELS_FILE = Path(__file__).with_name("channels.json")
+ROOT = Path(__file__).parent
+CHANNELS_FILE = ROOT / "channels.json"
+AUDIO_DIR = ROOT / "audio"
+COURSES_DIR = ROOT / "courses"
+AUDIO_EXT = {".mp3", ".m4a", ".aac", ".ogg", ".wav"}
 
 
 def fetch(url):
@@ -68,8 +77,55 @@ def build(ch):
             for e in ch.get("episodes", [])]
 
 
+def natural(path):
+    return [int(x) if x.isdigit() else x.lower() for x in re.split(r"(\d+)", path.name)]
+
+
+def short_id(prefix, text):
+    return prefix + hashlib.md5(text.encode("utf-8")).hexdigest()[:8]
+
+
+def folder_channels():
+    """audio/ 下每个文件夹是一个节目，文件夹里的音频按文件名排序，文件夹里的 说明.txt 作为介绍。"""
+    if not AUDIO_DIR.is_dir():
+        return []
+    channels = []
+    for folder in sorted((d for d in AUDIO_DIR.iterdir() if d.is_dir()), key=natural):
+        files = sorted((f for f in folder.iterdir() if f.suffix.lower() in AUDIO_EXT), key=natural)
+        note = folder / "说明.txt"
+        desc = note.read_text(encoding="utf-8-sig").strip().split("\n")[0] if note.is_file() else ""
+        channels.append(dict(
+            id=short_id("my-", folder.name), stage=1, name=folder.name, org="我的音频",
+            desc=desc or "自己上传的音频。",
+            episodes=[dict(title=f.stem, url=quote(f.relative_to(ROOT).as_posix())) for f in files]))
+    return channels
+
+
+def build_courses():
+    """courses/ 下每个 .txt 是一个场景：# 开头是说明，其余每行 “英文 | 中文”。"""
+    scenes = []
+    if COURSES_DIR.is_dir():
+        for f in sorted(COURSES_DIR.glob("*.txt"), key=natural):
+            note, items = "", []
+            for line in f.read_text(encoding="utf-8-sig").splitlines():
+                line = line.strip()
+                if not line:
+                    continue
+                if line.startswith("#"):
+                    note = note or line.lstrip("# ")
+                    continue
+                en, _, zh = line.replace("｜", "|").partition("|")
+                items.append([en.strip(), zh.strip()])
+            if items:
+                scenes.append(dict(id=short_id("c-", f.stem), name=f.stem, note=note, items=items))
+                print(f"[课程] {f.stem}: {len(items)} 句")
+    js = "window.CUSTOM_SCENES = " + json.dumps(scenes, ensure_ascii=False, indent=1) + ";\n"
+    (ROOT / "custom_courses.js").write_text(js, encoding="utf-8")
+
+
 def main():
-    channels = json.loads(CHANNELS_FILE.read_text(encoding="utf-8"))
+    build_courses()
+    channels = folder_channels() + json.loads(CHANNELS_FILE.read_text(encoding="utf-8"))
     out = []
     for ch in channels:
         stage = ch.get("stage")
@@ -84,12 +140,12 @@ def main():
         if not eps:
             print(f"[跳过] {ch['name']}: 没有可播放的内容", file=sys.stderr)
             continue
-        print(f"[OK] {ch['name']}: {len(eps)} 期，最新 {eps[0]['d']}")
+        print(f"[OK] {ch['name']}: {len(eps)} 期" + (f"，最新 {eps[0]['d']}" if eps[0]["d"] else ""))
         keep = {k: ch[k] for k in ("id", "stage", "name", "org", "desc") if k in ch}
         out.append(keep | {"episodes": eps})
     data = {"updated": datetime.now().strftime("%Y-%m-%d"), "channels": out}
     js = "window.PLAYLIST = " + json.dumps(data, ensure_ascii=False, separators=(",", ":")) + ";\n"
-    Path(__file__).with_name("playlist.js").write_text(js, encoding="utf-8")
+    (ROOT / "playlist.js").write_text(js, encoding="utf-8")
     print("已写入 playlist.js")
 
 

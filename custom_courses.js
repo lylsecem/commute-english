@@ -1,0 +1,49 @@
+window.CUSTOM_SCENES = [
+ {
+  "id": "c-ef0c090c",
+  "name": "看病",
+  "note": "医院、药店。每行格式：英文 | 中文",
+  "items": [
+   [
+    "I don't feel well.",
+    "我不舒服。"
+   ],
+   [
+    "I have a headache.",
+    "我头疼。"
+   ],
+   [
+    "I have a fever.",
+    "我发烧了。"
+   ],
+   [
+    "It hurts here.",
+    "这里疼。"
+   ],
+   [
+    "I need to see a doctor.",
+    "我需要看医生。"
+   ],
+   [
+    "Where is the pharmacy?",
+    "药店在哪？"
+   ],
+   [
+    "How often should I take this?",
+    "这个药多久吃一次？"
+   ],
+   [
+    "Twice a day.",
+    "一天两次。"
+   ],
+   [
+    "Do I need a prescription?",
+    "需要处方吗？"
+   ],
+   [
+    "I'm allergic to penicillin.",
+    "我对青霉素过敏。"
+   ]
+  ]
+ }
+];

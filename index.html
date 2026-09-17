@@ -225,9 +225,11 @@ footer{color:var(--muted);font-size:13px;margin-top:32px;border-top:1px solid va
 </div>
 
 <script src="courses.js"></script>
+<script src="custom_courses.js"></script>
 <script src="playlist.js"></script>
 <script>
-const {scenes: SCENES, weeks: WEEKS} = window.COURSES;
+const WEEKS = window.COURSES.weeks;
+const SCENES = [...window.COURSES.scenes, ...(window.CUSTOM_SCENES || [])];
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[ch]));
