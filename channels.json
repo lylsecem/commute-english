@@ -1,0 +1,37 @@
+[
+  {"id": "eim", "stage": 1, "name": "English in a Minute", "org": "VOA",
+   "desc": "每期 1 分钟讲一个日常说法，连着听不累。",
+   "feed": "https://learningenglish.voanews.com/podcast/video.aspx?zoneId=3619"},
+
+  {"id": "tews", "stage": 1, "name": "The English We Speak", "org": "BBC",
+   "desc": "3 分钟小情景讲一个口语表达。",
+   "feed": "https://podcasts.files.bbci.co.uk/p02pc9zn.rss"},
+
+  {"id": "echo", "stage": 1, "name": "The English Echo", "org": "Podcast",
+   "desc": "为初学者做的慢速英语听力。",
+   "feed": "https://anchor.fm/s/f79395d4/podcast/rss"},
+
+  {"id": "eslpod", "stage": 2, "name": "ESLPod", "org": "ESLPod.com",
+   "desc": "慢速对话 + 逐句讲解 + 正常语速再读一遍。",
+   "feed": "https://www.eslpod.com/feed.xml"},
+
+  {"id": "cbe", "stage": 2, "name": "Coffee Break English", "org": "Coffee Break",
+   "desc": "老师带学生上课，讲解耐心。",
+   "feed": "https://feeds.acast.com/public/shows/183d2cc4-50d2-420f-a306-40dae4a0bfa7"},
+
+  {"id": "stories", "stage": 2, "name": "Learning English Stories", "org": "BBC",
+   "desc": "几分钟一个简化版的经典故事。",
+   "feed": "https://podcasts.files.bbci.co.uk/p02pc9s1.rss"},
+
+  {"id": "words", "stage": 3, "name": "Words and Their Stories", "org": "VOA",
+   "desc": "讲词语和习语背后的故事，语速慢。",
+   "feed": "https://learningenglish.voanews.com/podcast/?zoneId=987"},
+
+  {"id": "6min", "stage": 3, "name": "6 Minute English", "org": "BBC",
+   "desc": "两人聊一个话题，顺带讲 6 个词。",
+   "feed": "https://podcasts.files.bbci.co.uk/p02pc9tn.rss"},
+
+  {"id": "bbcws", "stage": 3, "name": "BBC World Service", "org": "BBC 直播",
+   "desc": "24 小时英语新闻广播，正常语速，听个氛围。",
+   "live": "https://stream.live.vc.bbcmedia.co.uk/bbc_world_service"}
+]

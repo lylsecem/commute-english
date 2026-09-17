@@ -4,6 +4,10 @@ on:
   schedule:
     - cron: "0 20 * * 0"   # 每周日 20:00 UTC = 北京时间周一 04:00
   workflow_dispatch:        # 也可以在 Actions 页面手动运行
+  push:                     # 改了广播配置后立即重新生成
+    paths:
+      - channels.json
+      - update_playlist.py
 
 permissions:
   contents: write
@@ -22,4 +26,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898+github-actions[bot]@users.noreply.github.com"
           git add playlist.js
-          git diff --cached --quiet || git commit -m "更新节目列表" && git push
+          git diff --cached --quiet && exit 0
+          git commit -m "更新节目列表"
+          git pull --rebase
+          git push
