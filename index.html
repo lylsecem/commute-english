@@ -5,7 +5,7 @@
 <style>
 :root{
   --ground:#EEF2F0; --surface:#FFFFFF; --sunk:#E2E8E5; --ink:#15232A; --muted:#5B6B70;
-  --line:#CFD8D4; --accent:#0E6B75; --accent-ink:#FFFFFF; --signal:#E09A12; --signal-ink:#1D1400;
+  --line:#CFD8D4; --accent:#0E6B75; --accent-ink:#FFFFFF; --signal:#E09A12; --signal-ink:#1D1400; --bad:#B93A2E;
   --en:"Atkinson Hyperlegible","Segoe UI",system-ui,sans-serif;
   --zh:"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
   --display:"Bricolage Grotesque","Atkinson Hyperlegible",system-ui,sans-serif;
@@ -13,14 +13,15 @@
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
     --ground:#0F1619; --surface:#172126; --sunk:#1F2B31; --ink:#E4ECEE; --muted:#93A4A9;
-    --line:#2A383E; --accent:#5BBAC4; --accent-ink:#06191C; --signal:#F2B43C; --signal-ink:#1D1400;
+    --line:#2A383E; --accent:#5BBAC4; --accent-ink:#06191C; --signal:#F2B43C; --signal-ink:#1D1400; --bad:#F08A7A;
   }
 }
 :root[data-theme="dark"]{
   --ground:#0F1619; --surface:#172126; --sunk:#1F2B31; --ink:#E4ECEE; --muted:#93A4A9;
-  --line:#2A383E; --accent:#5BBAC4; --accent-ink:#06191C; --signal:#F2B43C; --signal-ink:#1D1400;
+  --line:#2A383E; --accent:#5BBAC4; --accent-ink:#06191C; --signal:#F2B43C; --signal-ink:#1D1400; --bad:#F08A7A;
 }
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 body{background:var(--ground);color:var(--ink);font-family:var(--zh);font-size:15px;line-height:1.6;padding-inline:16px;padding-block:0 64px}
 .wrap{max-width:880px;margin:0 auto}
 a{color:var(--accent)}
@@ -88,6 +89,73 @@ h2{font-family:var(--display);font-weight:600;font-size:24px;margin:0 0 4px;text
 .ep.on .n{color:var(--signal)}
 .ep.done .t{color:var(--muted)}
 
+/* 单词打卡 */
+.vtoday{display:grid;grid-template-columns:1fr auto;gap:14px 18px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px}
+.vstat{display:grid;gap:6px}
+.vbig{font-family:var(--display);font-weight:800;font-size:34px;line-height:1;font-variant-numeric:tabular-nums}
+.vbig span,.vbig small{color:var(--muted);font-weight:600}
+.vbig small{font-size:16px;font-family:var(--zh)}
+.vbar{height:8px;background:var(--sunk);border-radius:99px;overflow:hidden}
+.vbar i{display:block;height:100%;width:0;background:var(--accent);border-radius:99px;transition:width .3s}
+.vmeta{font-size:14px;color:var(--muted)}
+.vmeta.vlate{color:var(--bad)}
+.vstreak{display:grid;justify-items:center;gap:2px;font-size:12px;color:var(--muted)}
+.vstreak b{font-family:var(--display);font-weight:800;font-size:44px;line-height:1;color:var(--signal);font-variant-numeric:tabular-nums}
+.vstart{grid-column:1/-1;background:var(--signal);color:var(--signal-ink);border:none;border-radius:12px;padding:14px 20px;font-size:17px;font-weight:700;cursor:pointer}
+.vstart:disabled{opacity:.45;cursor:default}
+.vgrid{display:grid;grid-template-columns:1.1fr 1fr;gap:10px;margin-top:10px}
+.vcard{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px}
+.vcal-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;font-size:14px}
+.vcal-head span{color:var(--muted);font-size:13px}
+.vcal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;font-family:var(--en);font-variant-numeric:tabular-nums}
+.vcal span{aspect-ratio:1;display:grid;place-items:center;border-radius:8px;font-size:13px;color:var(--ink)}
+.vcal .wd{aspect-ratio:auto;font-family:var(--zh);font-size:11px;color:var(--muted)}
+.vcal .future{color:var(--muted);opacity:.5}
+.vcal .on{background:var(--accent);color:var(--accent-ink);font-weight:700}
+.vcal .today{box-shadow:inset 0 0 0 2px var(--signal)}
+.vset{display:grid;gap:12px;align-content:start}
+.vset label{display:grid;gap:4px;font-size:13px;color:var(--muted)}
+.vset select,.vset input{font:inherit;color:var(--ink);background:var(--ground);border:1px solid var(--line);border-radius:8px;padding:8px}
+.vrow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.vbookprog{display:grid;gap:4px;font-size:12px;color:var(--muted)}
+.vbtn{font:inherit;font-size:14px;border:1px solid var(--accent);color:var(--accent);background:transparent;border-radius:8px;padding:9px 14px;cursor:pointer}
+.vbtn-quiet{border-color:var(--line);color:var(--muted)}
+.vhint{font-size:12px;color:var(--muted);margin:0}
+
+.vmodal{position:fixed;inset:0;z-index:50;background:var(--ground);display:flex;justify-content:center;padding:env(safe-area-inset-top,0px) 16px env(safe-area-inset-bottom,0px)}
+.vpanel{width:100%;max-width:560px;height:100%;display:flex;flex-direction:column}
+.vtop{display:flex;align-items:center;gap:12px;padding-block:12px}
+.vx{width:40px;height:40px;flex:none;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;font-size:16px}
+.vbar-grow{flex:1}
+.vcount{font-family:var(--en);font-variant-numeric:tabular-nums;font-size:14px;color:var(--muted);min-width:52px;text-align:right}
+.vstage{flex:1;display:grid;align-content:center;overflow-y:auto;padding-block:12px}
+.vview{display:grid;justify-items:center;gap:14px;text-align:center}
+.vtag{font-size:12px;padding:2px 10px;border-radius:99px;background:color-mix(in srgb,var(--accent) 16%,transparent);color:var(--accent)}
+.vword{font-family:var(--en);font-weight:700;font-size:clamp(40px,12vw,64px);line-height:1.1;overflow-wrap:anywhere}
+.vword-sm{font-family:var(--zh);font-size:28px}
+.vzh{font-size:18px;color:var(--muted)}
+.vzh-big{font-size:26px;color:var(--ink);font-weight:500}
+.vsay{font:inherit;font-size:14px;border:1px solid var(--line);background:var(--surface);color:var(--accent);border-radius:99px;padding:8px 16px;cursor:pointer}
+.vview .vstart{min-width:220px}
+.vslots{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-top:6px}
+.vslots span{width:clamp(26px,8vw,40px);height:clamp(40px,11vw,52px);display:grid;place-items:center;border-bottom:3px solid var(--line);font-family:var(--en);font-weight:700;font-size:clamp(22px,6.5vw,32px)}
+.vslots .cur{border-color:var(--signal)}
+.vslots .fill{border-color:var(--accent)}
+.vslots .miss{border-color:var(--bad);color:var(--bad)}
+.vslots .gap{width:14px;border:none}
+.vslots.shake{animation:vshake .3s}
+@keyframes vshake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.vfb{min-height:24px;font-size:15px;color:var(--muted)}
+.vfb.ok{color:var(--accent);font-weight:700}
+.vfb.bad{color:var(--bad)}
+.vactions{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.vcheck{width:72px;height:72px;border-radius:50%;display:grid;place-items:center;background:var(--accent);color:var(--accent-ink);font-size:36px;font-weight:700}
+.vkb{display:grid;gap:6px;padding-block:8px 14px}
+.vkb .row{display:flex;gap:5px;justify-content:center}
+.vkb button{flex:1;max-width:50px;height:52px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-family:var(--en);font-size:21px;cursor:pointer;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+.vkb button:active{background:var(--sunk)}
+.vkb button.bad{background:color-mix(in srgb,var(--bad) 28%,var(--surface));border-color:var(--bad)}
+
 /* 句库 */
 .tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
 .tab{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 12px;cursor:pointer;font-size:14px}
@@ -111,11 +179,13 @@ footer{color:var(--muted);font-size:13px;margin-top:32px;border-top:1px solid va
 
 @media (max-width:640px){
   .day{grid-template-columns:1fr}
+  .vgrid{grid-template-columns:1fr}
+  .vkb .row{gap:4px}
   .controls{justify-content:center;gap:8px}
   .btn-round{width:48px;height:48px}
   .btn-play{width:68px;height:68px}
 }
-@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}.vslots.shake{animation:none}}
 </style>
 
 <div class="wrap">
@@ -127,6 +197,7 @@ footer{color:var(--muted);font-size:13px;margin-top:32px;border-top:1px solid va
 
   <nav class="jump" aria-label="页面导航">
     <a href="#plan">每天怎么学</a>
+    <a href="#words">单词打卡</a>
     <a href="#drive">开车磨耳朵</a>
     <a href="#radio">英语广播</a>
     <a href="#phrases">场景句库</a>
@@ -141,8 +212,39 @@ footer{color:var(--muted);font-size:13px;margin-top:32px;border-top:1px solid va
         <ol><li>10 分钟：磨耳朵播放器放当天场景，只听不管</li><li>10 分钟：同一场景，跟着小声复读</li><li>10 分钟：英语广播连播</li></ol></div>
       <div class="slot"><span class="label">下班通勤</span><b>重复同样的内容</b>
         <ol><li>15 分钟：再放早上的场景</li><li>15 分钟：重听早上那期节目（第二遍会明显听懂更多）</li></ol></div>
-      <div class="slot"><span class="label">睡前 5 分钟</span><b>看文字对答案</b>
-        <ol><li>翻到句库，把今天听的句子看一遍</li><li>挑 3 句，第二天有机会就用</li></ol></div>
+      <div class="slot"><span class="label">晚上 15 分钟</span><b>单词打卡 + 对答案</b>
+        <ol><li>完成单词打卡（10 分钟左右）</li><li>翻到句库，把今天听的句子看一遍</li></ol></div>
+    </div>
+  </section>
+
+  <section id="words">
+    <h2>单词打卡</h2>
+    <p class="sub">每天学几个新词，再复习到期的旧词。听发音、按键拼写，全部拼对自动打卡。学习进度保存在当前手机的浏览器里。</p>
+    <div class="vtoday">
+      <div class="vstat">
+        <span class="label">今日任务</span>
+        <div class="vbig"><b id="vDone">0</b><span> / </span><span id="vTotal">0</span><small> 词</small></div>
+        <div class="vbar"><i id="vBar"></i></div>
+        <div class="vmeta" id="vMeta"></div>
+      </div>
+      <div class="vstreak"><b id="vStreak">0</b><span>连续打卡</span></div>
+      <button class="vstart" id="vStart" type="button">开始今天的任务</button>
+    </div>
+    <div class="vgrid">
+      <div class="vcard">
+        <div class="vcal-head"><b id="vMonth"></b><span id="vMonthCount"></span></div>
+        <div class="vcal" id="vCal"></div>
+      </div>
+      <div class="vcard vset">
+        <label for="vBook">词书<select id="vBook"></select></label>
+        <div class="vbookprog" id="vBookProg"></div>
+        <div class="vrow">
+          <label for="vPerDay">每日新词<select id="vPerDay"><option>5</option><option>10</option><option>15</option><option>20</option></select></label>
+          <label for="vRemind">打卡时间<input type="time" id="vRemind" value="20:00"></label>
+        </div>
+        <button class="vbtn" id="vIcs" type="button">添加每日提醒到手机日历</button>
+        <p class="vhint" id="vSetHint">改词书或每日数量：今天还没开始的话立即生效，否则明天生效。</p>
+      </div>
     </div>
   </section>
 
@@ -224,9 +326,48 @@ footer{color:var(--muted);font-size:13px;margin-top:32px;border-top:1px solid va
   <footer>初版框架 · 发音由设备自带的朗读引擎生成，不同手机音色会不一样。</footer>
 </div>
 
+<div class="vmodal" id="vModal" role="dialog" aria-modal="true" aria-label="单词练习" hidden>
+  <div class="vpanel">
+    <div class="vtop">
+      <button class="vx" id="vClose" type="button" aria-label="退出练习">✕</button>
+      <div class="vbar vbar-grow"><i id="vqBar"></i></div>
+      <span class="vcount" id="vqCount">0 / 0</span>
+    </div>
+    <div class="vstage">
+      <div class="vview" id="vLearn" hidden>
+        <span class="vtag">新词</span>
+        <div class="vword" id="vlWord"></div>
+        <div class="vzh" id="vlZh"></div>
+        <button class="vsay" id="vlSay" type="button">🔊 再听一遍</button>
+        <button class="vstart" id="vlGo" type="button">记住了，开始拼写</button>
+      </div>
+      <div class="vview" id="vSpell" hidden>
+        <span class="vtag" id="vsTag">拼写</span>
+        <div class="vzh vzh-big" id="vsZh"></div>
+        <button class="vsay" id="vsSay" type="button">🔊 听发音</button>
+        <div class="vslots" id="vSlots"></div>
+        <div class="vfb" id="vFb" aria-live="polite"></div>
+        <div class="vactions">
+          <button class="vbtn" id="vHint" type="button">提示一个字母</button>
+          <button class="vbtn vbtn-quiet" id="vGiveUp" type="button">不会，看答案</button>
+        </div>
+      </div>
+      <div class="vview" id="vFinish" hidden>
+        <div class="vcheck">✓</div>
+        <div class="vword vword-sm" id="vfTitle">今日打卡成功</div>
+        <div class="vzh" id="vfText"></div>
+        <div class="vstreak"><b id="vfStreak">0</b><span>连续打卡天数</span></div>
+        <button class="vstart" id="vfClose" type="button">完成</button>
+      </div>
+    </div>
+    <div class="vkb" id="vKb" hidden></div>
+  </div>
+</div>
+
 <script src="courses.js"></script>
 <script src="custom_courses.js"></script>
 <script src="playlist.js"></script>
+<script src="words.js"></script>
 <script>
 const WEEKS = window.COURSES.weeks;
 const SCENES = [...window.COURSES.scenes, ...(window.CUSTOM_SCENES || [])];
@@ -451,3 +592,4 @@ if(!PL || !PL.channels?.length){
 /* ---------- 路线 ---------- */
 $("weeks").innerHTML = WEEKS.map((w,i)=>`<div class="week"><div class="wk">W${i+1}</div><b>${esc(w[0])}</b><p>${esc(w[1])}</p></div>`).join("");
 </script>
+<script src="vocab.js"></script>

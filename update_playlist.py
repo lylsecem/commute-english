@@ -2,6 +2,7 @@
 
 - channels.json + audio/<节目名>/*.mp3  ->  playlist.js
 - courses/<场景名>.txt                  ->  custom_courses.js
+- words/<词书名>.txt                    ->  words.js
 
 用法：python update_playlist.py   （建议每周运行一次拿到新节目）
 """
@@ -23,6 +24,7 @@ ROOT = Path(__file__).parent
 CHANNELS_FILE = ROOT / "channels.json"
 AUDIO_DIR = ROOT / "audio"
 COURSES_DIR = ROOT / "courses"
+WORDS_DIR = ROOT / "words"
 AUDIO_EXT = {".mp3", ".m4a", ".aac", ".ogg", ".wav"}
 
 
@@ -101,30 +103,53 @@ def folder_channels():
     return channels
 
 
+def read_pairs(path):
+    """读取 “英文 | 中文” 格式的 txt，返回 (说明, [[英文, 中文], ...])。# 开头的第一行是说明。"""
+    note, items = "", []
+    for line in path.read_text(encoding="utf-8-sig").splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        if line.startswith("#"):
+            note = note or line.lstrip("# ")
+            continue
+        en, _, zh = line.replace("｜", "|").partition("|")
+        if en.strip():
+            items.append([en.strip(), zh.strip()])
+    return note, items
+
+
+def write_js(name, var, data):
+    js = f"window.{var} = " + json.dumps(data, ensure_ascii=False, indent=1) + ";\n"
+    (ROOT / name).write_text(js, encoding="utf-8")
+
+
 def build_courses():
     """courses/ 下每个 .txt 是一个场景：# 开头是说明，其余每行 “英文 | 中文”。"""
     scenes = []
-    if COURSES_DIR.is_dir():
-        for f in sorted(COURSES_DIR.glob("*.txt"), key=natural):
-            note, items = "", []
-            for line in f.read_text(encoding="utf-8-sig").splitlines():
-                line = line.strip()
-                if not line:
-                    continue
-                if line.startswith("#"):
-                    note = note or line.lstrip("# ")
-                    continue
-                en, _, zh = line.replace("｜", "|").partition("|")
-                items.append([en.strip(), zh.strip()])
-            if items:
-                scenes.append(dict(id=short_id("c-", f.stem), name=f.stem, note=note, items=items))
-                print(f"[课程] {f.stem}: {len(items)} 句")
-    js = "window.CUSTOM_SCENES = " + json.dumps(scenes, ensure_ascii=False, indent=1) + ";\n"
-    (ROOT / "custom_courses.js").write_text(js, encoding="utf-8")
+    for f in sorted(COURSES_DIR.glob("*.txt"), key=natural) if COURSES_DIR.is_dir() else []:
+        note, items = read_pairs(f)
+        if items:
+            scenes.append(dict(id=short_id("c-", f.stem), name=f.stem, note=note, items=items))
+            print(f"[课程] {f.stem}: {len(items)} 句")
+    write_js("custom_courses.js", "CUSTOM_SCENES", scenes)
+
+
+def build_words():
+    """words/ 下每个 .txt 是一本词书，文件名开头的数字只用于排序。"""
+    books = []
+    for f in sorted(WORDS_DIR.glob("*.txt"), key=natural) if WORDS_DIR.is_dir() else []:
+        _, items = read_pairs(f)
+        if items:
+            name = re.sub(r"^\d+\s*", "", f.stem) or f.stem
+            books.append(dict(id=short_id("w-", f.stem), name=name, items=items))
+            print(f"[词书] {name}: {len(items)} 词")
+    write_js("words.js", "WORD_BOOKS", books)
 
 
 def main():
     build_courses()
+    build_words()
     channels = folder_channels() + json.loads(CHANNELS_FILE.read_text(encoding="utf-8"))
     out = []
     for ch in channels:
