@@ -1,0 +1,508 @@
+<meta charset="utf-8">
+<title>通勤英语</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Noto+Sans+SC:wght@400;500;700&display=swap">
+<style>
+:root{
+  --ground:#EEF2F0; --surface:#FFFFFF; --sunk:#E2E8E5; --ink:#15232A; --muted:#5B6B70;
+  --line:#CFD8D4; --accent:#0E6B75; --accent-ink:#FFFFFF; --signal:#E09A12; --signal-ink:#1D1400;
+  --en:"Atkinson Hyperlegible","Segoe UI",system-ui,sans-serif;
+  --zh:"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+  --display:"Bricolage Grotesque","Atkinson Hyperlegible",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#0F1619; --surface:#172126; --sunk:#1F2B31; --ink:#E4ECEE; --muted:#93A4A9;
+    --line:#2A383E; --accent:#5BBAC4; --accent-ink:#06191C; --signal:#F2B43C; --signal-ink:#1D1400;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0F1619; --surface:#172126; --sunk:#1F2B31; --ink:#E4ECEE; --muted:#93A4A9;
+  --line:#2A383E; --accent:#5BBAC4; --accent-ink:#06191C; --signal:#F2B43C; --signal-ink:#1D1400;
+}
+*{box-sizing:border-box}
+body{background:var(--ground);color:var(--ink);font-family:var(--zh);font-size:15px;line-height:1.6;padding-inline:16px;padding-block:0 64px}
+.wrap{max-width:880px;margin:0 auto}
+a{color:var(--accent)}
+button,select{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--signal);outline-offset:2px}
+
+header.top{padding-block:28px 12px}
+.brand{font-family:var(--display);font-weight:800;font-size:clamp(30px,6vw,44px);letter-spacing:-.02em;line-height:1.05;margin:0}
+.brand span{color:var(--accent)}
+.lede{color:var(--muted);margin:8px 0 0;max-width:60ch}
+nav.jump{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--ground);display:flex;gap:6px;overflow-x:auto;padding-block:10px;border-bottom:1px solid var(--line)}
+nav.jump a{flex:none;text-decoration:none;color:var(--ink);padding:6px 12px;border-radius:999px;background:var(--sunk);font-size:14px}
+nav.jump a:hover{background:var(--line)}
+
+section{padding-block:28px 8px}
+h2{font-family:var(--display);font-weight:600;font-size:24px;margin:0 0 4px;text-wrap:balance}
+.sub{color:var(--muted);margin:0 0 16px;font-size:14px}
+.label{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-family:var(--en)}
+
+/* 每日安排 */
+.day{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.slot{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px}
+.slot b{display:block;font-size:16px;margin:2px 0 6px}
+.slot ol{margin:0;padding-left:18px;color:var(--muted);font-size:14px}
+
+/* 播放器 */
+.player{background:var(--ink);color:var(--ground);border-radius:16px;padding:20px;display:grid;gap:16px}
+.player .label{color:color-mix(in srgb,var(--ground) 65%,transparent)}
+.now{min-height:128px;display:grid;align-content:center;gap:4px}
+.now .en{font-family:var(--en);font-weight:700;font-size:clamp(24px,5vw,34px);line-height:1.2}
+.now .zh{font-size:18px;opacity:.75}
+.now .pos{font-family:var(--en);font-variant-numeric:tabular-nums;font-size:13px;opacity:.6}
+.controls{display:flex;gap:12px;align-items:center}
+.btn-round{width:56px;height:56px;border-radius:50%;border:1px solid color-mix(in srgb,var(--ground) 30%,transparent);background:transparent;display:grid;place-items:center;cursor:pointer;color:var(--ground)}
+.btn-play{width:76px;height:76px;background:var(--signal);color:var(--signal-ink);border:none}
+.btn-round svg{width:24px;height:24px;fill:currentColor}
+.btn-play svg{width:32px;height:32px}
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+.opts label{display:grid;gap:4px;font-size:13px;opacity:.85}
+.opts select{background:color-mix(in srgb,var(--ground) 10%,transparent);border:1px solid color-mix(in srgb,var(--ground) 25%,transparent);border-radius:8px;padding:8px;color:var(--ground)}
+.opts select option{color:#15232A;background:#fff}
+.warn{font-size:13px;background:color-mix(in srgb,var(--signal) 18%,transparent);border-radius:8px;padding:8px 12px;margin:0}
+
+/* 广播 */
+.seek{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;font-family:var(--en);font-variant-numeric:tabular-nums;font-size:13px}
+.seek input{width:100%;accent-color:var(--signal)}
+.skip{font-family:var(--en);font-weight:700;font-size:14px}
+.channels{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px;margin-top:16px}
+.channel{text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px;cursor:pointer;display:grid;gap:2px}
+.channel[aria-pressed="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.channel .cname{font-family:var(--en);font-weight:700;font-size:15px;line-height:1.25}
+.channel .cmeta{display:flex;gap:6px;align-items:center;font-size:12px;color:var(--muted)}
+.lv{font-size:11px;padding:0 7px;border-radius:999px;background:color-mix(in srgb,var(--accent) 16%,transparent);color:var(--accent)}
+.channel .cdesc{font-size:13px;color:var(--muted)}
+.eplist-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap;margin:18px 0 6px}
+.eplist-head .sub{margin:0}
+.eplist{list-style:none;margin:0;padding:0;background:var(--surface);border:1px solid var(--line);border-radius:10px;max-height:460px;overflow-y:auto}
+.ep{display:grid;grid-template-columns:28px 1fr auto;gap:10px;align-items:center;width:100%;text-align:left;background:none;border:none;border-top:1px solid var(--line);padding:10px 12px;cursor:pointer}
+.eplist li:first-child .ep{border-top:none}
+.ep:hover{background:var(--sunk)}
+.ep .n{font-family:var(--en);font-variant-numeric:tabular-nums;color:var(--muted);font-size:13px}
+.ep .t{font-family:var(--en);font-size:15px;line-height:1.3}
+.ep .d{font-size:12px;color:var(--muted);font-family:var(--en);font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+.ep.on{background:color-mix(in srgb,var(--signal) 16%,transparent)}
+.ep.on .n{color:var(--signal)}
+.ep.done .t{color:var(--muted)}
+
+/* 句库 */
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.tab{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 12px;cursor:pointer;font-size:14px}
+.tab[aria-selected="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.scene-note{color:var(--muted);font-size:14px;margin:0 0 8px}
+.phrases{list-style:none;margin:0;padding:0;background:var(--surface);border:1px solid var(--line);border-radius:10px}
+.phrases li{display:grid;grid-template-columns:40px 1fr;gap:10px;align-items:center;padding:10px 12px;border-top:1px solid var(--line)}
+.phrases li:first-child{border-top:none}
+.say{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--ground);cursor:pointer;display:grid;place-items:center;color:var(--accent)}
+.say svg{width:16px;height:16px;fill:currentColor}
+.phrases .en{font-family:var(--en);font-weight:700;font-size:17px;line-height:1.3}
+.phrases .zh{color:var(--muted);font-size:14px}
+
+/* 路线 */
+.weeks{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px}
+.week{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px}
+.week .wk{font-family:var(--display);font-weight:800;font-size:22px;color:var(--accent);line-height:1}
+.week b{display:block;margin:6px 0 2px}
+.week p{margin:0;color:var(--muted);font-size:14px}
+footer{color:var(--muted);font-size:13px;margin-top:32px;border-top:1px solid var(--line);padding-top:12px}
+
+@media (max-width:640px){
+  .day{grid-template-columns:1fr}
+  .controls{justify-content:center;gap:8px}
+  .btn-round{width:48px;height:48px}
+  .btn-play{width:68px;height:68px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <p class="label">Everyday English · 零基础</p>
+    <h1 class="brand">通勤<span>英语</span></h1>
+    <p class="lede">目标很简单：日常能开口、上网看得懂。开车时靠耳朵听，回家后用 5 分钟把听到的句子和文字对上。</p>
+  </header>
+
+  <nav class="jump" aria-label="页面导航">
+    <a href="#plan">每天怎么学</a>
+    <a href="#drive">开车磨耳朵</a>
+    <a href="#radio">英语广播</a>
+    <a href="#phrases">场景句库</a>
+    <a href="#route">8 周路线</a>
+  </nav>
+
+  <section id="plan">
+    <h2>每天怎么学</h2>
+    <p class="sub">按单程通勤约 30 分钟设计，时间不同就按比例缩放。</p>
+    <div class="day">
+      <div class="slot"><span class="label">早上通勤</span><b>听新内容</b>
+        <ol><li>10 分钟：磨耳朵播放器放当天场景，只听不管</li><li>10 分钟：同一场景，跟着小声复读</li><li>10 分钟：英语广播连播</li></ol></div>
+      <div class="slot"><span class="label">下班通勤</span><b>重复同样的内容</b>
+        <ol><li>15 分钟：再放早上的场景</li><li>15 分钟：重听早上那期节目（第二遍会明显听懂更多）</li></ol></div>
+      <div class="slot"><span class="label">睡前 5 分钟</span><b>看文字对答案</b>
+        <ol><li>翻到句库，把今天听的句子看一遍</li><li>挑 3 句，第二天有机会就用</li></ol></div>
+    </div>
+  </section>
+
+  <section id="drive">
+    <h2>开车磨耳朵</h2>
+    <p class="sub">出发前选好场景、按下播放，路上就不用碰手机。流程：英文 → 停顿（留时间跟读）→ 中文意思 → 再听一遍英文。</p>
+    <div class="player">
+      <div class="now" aria-live="polite">
+        <span class="pos" id="pos">1 / 12</span>
+        <div class="en" id="nowEn">Hi, how are you?</div>
+        <div class="zh" id="nowZh">你好，最近怎么样？</div>
+      </div>
+      <div class="controls">
+        <button class="btn-round" id="prev" aria-label="上一句"><svg viewBox="0 0 24 24"><path d="M6 5h2v14H6zM20 5v14L9 12z"/></svg></button>
+        <button class="btn-round btn-play" id="play" aria-label="播放"><svg viewBox="0 0 24 24" id="playIcon"><path d="M7 4v16l13-8z"/></svg></button>
+        <button class="btn-round" id="next" aria-label="下一句"><svg viewBox="0 0 24 24"><path d="M16 5h2v14h-2zM4 5v14l11-7z"/></svg></button>
+      </div>
+      <div class="opts">
+        <label for="optScene">场景<select id="optScene"></select></label>
+        <label for="optRate">英文语速<select id="optRate"><option value="0.7">慢</option><option value="0.85" selected>稍慢</option><option value="1">正常</option></select></label>
+        <label for="optRepeat">每句英文听几遍<select id="optRepeat"><option>1</option><option selected>2</option><option>3</option></select></label>
+        <label for="optPause">跟读停顿<select id="optPause"><option value="1500">1.5 秒</option><option value="3000" selected>3 秒</option><option value="5000">5 秒</option></select></label>
+        <label for="optZh">中文解释<select id="optZh"><option value="1" selected>读出来</option><option value="0">不读</option></select></label>
+      </div>
+      <p class="warn" id="voiceWarn" hidden></p>
+      <p class="warn">安全提示：只在停车时操作。手机锁屏后部分浏览器会停止朗读，长时间开车建议把屏幕常亮，或改听下方的播客节目。</p>
+    </div>
+  </section>
+
+  <section id="radio">
+    <h2>英语广播</h2>
+    <p class="sub">点节目直接在这里播放，播完自动接下一期。蓝牙连车后，方向盘上的“上一首 / 下一首”也能切换。</p>
+
+    <div class="player">
+      <div class="now">
+        <span class="pos" id="rChannel">选一个节目开始</span>
+        <div class="en" id="rTitle">—</div>
+        <div class="zh" id="rDesc"></div>
+      </div>
+      <div class="seek">
+        <span id="rCur">0:00</span>
+        <input type="range" id="rSeek" min="0" max="100" value="0" step="1" aria-label="播放进度">
+        <span id="rDur">0:00</span>
+      </div>
+      <div class="controls">
+        <button class="btn-round" id="rBack" aria-label="后退 15 秒"><span class="skip">-15</span></button>
+        <button class="btn-round" id="rPrev" aria-label="上一期"><svg viewBox="0 0 24 24"><path d="M6 5h2v14H6zM20 5v14L9 12z"/></svg></button>
+        <button class="btn-round btn-play" id="rPlay" aria-label="播放"><svg viewBox="0 0 24 24" id="rPlayIcon"><path d="M7 4v16l13-8z"/></svg></button>
+        <button class="btn-round" id="rNext" aria-label="下一期"><svg viewBox="0 0 24 24"><path d="M16 5h2v14h-2zM4 5v14l11-7z"/></svg></button>
+        <button class="btn-round" id="rFwd" aria-label="前进 30 秒"><span class="skip">+30</span></button>
+      </div>
+      <div class="opts">
+        <label for="rRate">语速<select id="rRate"><option value="0.75">0.75×</option><option value="0.9">0.9×</option><option value="1" selected>1×</option></select></label>
+        <label for="rAuto">播完后<select id="rAuto"><option value="next" selected>自动下一期</option><option value="repeat">重播这期</option><option value="stop">停止</option></select></label>
+      </div>
+      <p class="warn" id="rWarn" hidden></p>
+      <audio id="audio" preload="none"></audio>
+    </div>
+
+    <div class="channels" id="channels"></div>
+    <div class="eplist-head"><b id="epHead">节目列表</b><span class="sub" id="epUpdated"></span></div>
+    <ol class="eplist" id="eplist"></ol>
+  </section>
+
+  <section id="phrases">
+    <h2>场景句库</h2>
+    <p class="sub">点喇叭听发音。只收日常和上网最常用的，不背难词。</p>
+    <div class="tabs" role="tablist" id="tabs"></div>
+    <p class="scene-note" id="sceneNote"></p>
+    <ul class="phrases" id="list"></ul>
+  </section>
+
+  <section id="route">
+    <h2>8 周路线</h2>
+    <p class="sub">一周一个场景，周末把本周的句子全部连播一遍。跟不上就多留一周，不赶进度。</p>
+    <div class="weeks" id="weeks"></div>
+  </section>
+
+  <footer>初版框架 · 发音由设备自带的朗读引擎生成，不同手机音色会不一样。</footer>
+</div>
+
+<script src="playlist.js"></script>
+<script>
+const SCENES = [
+  {id:"hello", name:"打招呼", note:"见面、寒暄、介绍自己。", items:[
+    ["Hi, how are you?","你好，最近怎么样？"],["I'm good, thanks. And you?","挺好的，谢谢。你呢？"],
+    ["Nice to meet you.","很高兴认识你。"],["My name is Tom.","我叫 Tom。"],["I'm from China.","我来自中国。"],
+    ["What do you do?","你是做什么工作的？"],["How's it going?","最近怎么样？（更随意）"],["Long time no see.","好久不见。"],
+    ["Have a nice day.","祝你今天愉快。"],["See you later.","回头见。"],["Take care.","保重。"],["Good night.","晚安。"]]},
+  {id:"polite", name:"万能短句", note:"一天里说得最多的几句，先练这些。", items:[
+    ["Thank you so much.","太感谢了。"],["You're welcome.","不客气。"],["No problem.","没问题。"],["No worries.","没事，别在意。"],
+    ["Excuse me.","打扰一下 / 借过。"],["Sorry, my bad.","抱歉，是我的错。"],["Of course.","当然。"],["Sounds good.","好啊 / 可以。"],
+    ["Me too.","我也是。"],["I'm not sure.","我不太确定。"],["Just a moment, please.","请稍等。"],["That's OK.","没关系。"]]},
+  {id:"help", name:"听不懂时", note:"零基础最重要的一组：听不懂也能把对话接下去。", items:[
+    ["Sorry, I don't understand.","抱歉，我没听懂。"],["Could you say that again?","能再说一遍吗？"],
+    ["Could you speak more slowly?","能说慢一点吗？"],["What does this word mean?","这个词是什么意思？"],
+    ["How do you say this in English?","这个用英语怎么说？"],["Can you write it down?","能写下来吗？"],
+    ["I'm still learning English.","我还在学英语。"],["Do you mean tomorrow?","你是说明天吗？"],
+    ["Let me think.","让我想想。"],["I got it.","我明白了。"]]},
+  {id:"food", name:"吃饭点餐", note:"餐厅、咖啡店、快餐店。", items:[
+    ["A table for two, please.","两位，谢谢。"],["Can I see the menu?","能看下菜单吗？"],["What do you recommend?","你推荐什么？"],
+    ["I'd like this one.","我要这个。"],["Not spicy, please.","请不要辣。"],["Can I get a coffee?","我要一杯咖啡。"],
+    ["For here or to go?","堂食还是带走？"],["To go, please.","带走，谢谢。"],["Could I have some water?","能给我点水吗？"],
+    ["The check, please.","买单。"],["It's delicious.","很好吃。"],["I'm full.","我吃饱了。"]]},
+  {id:"shop", name:"购物付款", note:"逛店、网购、结账。", items:[
+    ["How much is this?","这个多少钱？"],["I'm just looking.","我随便看看。"],["Do you have a smaller size?","有小一号的吗？"],
+    ["Do you have this in black?","这个有黑色的吗？"],["Can I try it on?","可以试穿吗？"],["It's too expensive.","太贵了。"],
+    ["Is there a discount?","有折扣吗？"],["I'll take it.","我买了。"],["Can I pay by card?","可以刷卡吗？"],
+    ["Can I get a receipt?","可以给我小票吗？"],["Can I return it?","可以退货吗？"],["Where is the checkout?","在哪里结账？"]]},
+  {id:"travel", name:"出行问路", note:"打车、地铁、找地方。", items:[
+    ["Where is the subway station?","地铁站在哪？"],["How do I get to the airport?","去机场怎么走？"],["Is it far from here?","离这远吗？"],
+    ["Go straight.","直走。"],["Turn left.","左转。"],["It's on your right.","在你右手边。"],["How long does it take?","要多长时间？"],
+    ["I'm lost.","我迷路了。"],["Can you show me on the map?","能在地图上指给我看吗？"],
+    ["Please take me to this address.","请送我到这个地址。"],["The traffic is bad today.","今天堵车。"],["I'm running late.","我要迟到了。"]]},
+  {id:"time", name:"时间数字", note:"约时间、说数字，最容易听错的部分。", items:[
+    ["What time is it?","现在几点？"],["It's half past eight.","八点半。"],["See you at seven.","七点见。"],
+    ["What day is it today?","今天星期几？"],["It's Monday.","星期一。"],["This weekend.","这个周末。"],["Next week.","下周。"],
+    ["In ten minutes.","十分钟后。"],["It's fifteen, not fifty.","是十五，不是五十。"],["What's your phone number?","你电话号码多少？"],
+    ["How many people?","几个人？"]]},
+  {id:"web", name:"上网界面", note:"网站和 App 按钮上天天见的词，认识就够，不用会说。", items:[
+    ["Sign up","注册"],["Sign in","登录（也常写作 Log in）"],["Log out","退出登录"],["Password","密码"],
+    ["Forgot password?","忘记密码？"],["Verify your email","验证你的邮箱"],["Settings","设置"],["Search","搜索"],
+    ["Download","下载"],["Upload","上传"],["Share","分享"],["Save","保存"],["Cancel","取消"],["Delete","删除"],
+    ["Submit","提交"],["Next","下一步"],["Back","返回"],["Subscribe","订阅"],["Notifications","通知"],
+    ["Accept cookies","接受 Cookie（网站记录你的浏览）"],["Terms of Service","服务条款"],
+    ["Something went wrong.","出错了。"],["Try again.","再试一次。"],["Page not found.","页面不存在。"]]},
+  {id:"chat", name:"聊天评论", note:"社交软件、评论区、游戏里的常见说法和缩写。", items:[
+    ["LOL — laughing out loud","笑死 / 哈哈"],["BTW — by the way","顺便说一下"],["TBH — to be honest","说实话"],
+    ["IMO — in my opinion","我觉得"],["IDK — I don't know","不知道"],["ASAP — as soon as possible","尽快"],
+    ["Thanks for sharing!","感谢分享！"],["I totally agree.","完全同意。"],["That's so cool!","太酷了！"],
+    ["Same here.","我也是。"],["Check this out.","快看这个。"],["Can you send me the link?","能发我链接吗？"],
+    ["Just kidding.","开玩笑的。"],["Good question.","好问题。"]]}
+];
+
+const WEEKS = [
+  ["发音 + 打招呼","打招呼、万能短句。耳朵先习惯英语的节奏，不求听懂每个词。"],
+  ["听不懂时 + 时间数字","学会“请再说一遍”，再把数字和时间听熟。"],
+  ["吃饭点餐","能自己点一杯咖啡、一顿饭。"],
+  ["购物付款","问价、试穿、结账、退货。"],
+  ["出行问路","问路、打车、听懂左转右转。"],
+  ["上网界面","注册、登录、设置，外文网站和 App 不再发怵。"],
+  ["聊天评论","看懂评论区和聊天里的缩写，能回一两句。"],
+  ["综合复习","全部场景连播；广播换到下一阶段的节目。"]
+];
+
+const $ = id => document.getElementById(id);
+const store = {
+  get(k,d){try{const v=localStorage.getItem(k);return v===null?d:JSON.parse(v)}catch(e){return d}},
+  set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+};
+const ICON_SAY = '<svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9zm12.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4z"/></svg>';
+
+/* ---------- 朗读 ---------- */
+const synth = window.speechSynthesis;
+let voices = [];
+function loadVoices(){
+  if(!synth) return;
+  voices = synth.getVoices();
+  const warn = $("voiceWarn");
+  if(!voices.length){ return; }
+  const hasZh = voices.some(v=>/^zh/i.test(v.lang));
+  const hasEn = voices.some(v=>/^en/i.test(v.lang));
+  const msgs = [];
+  if(!hasEn) msgs.push("这台设备没找到英文朗读音色，发音可能不标准。");
+  if(!hasZh) msgs.push("没找到中文朗读音色，中文解释会跳过。");
+  warn.textContent = msgs.join(" "); warn.hidden = !msgs.length;
+}
+if(synth){ loadVoices(); synth.onvoiceschanged = loadVoices; }
+else { $("voiceWarn").textContent="当前浏览器不支持朗读，请换用手机 Chrome / Safari 打开。"; $("voiceWarn").hidden=false; }
+
+function pickVoice(lang){
+  const pref = voices.filter(v=>v.lang.replace("_","-").toLowerCase().startsWith(lang.toLowerCase()));
+  return pref.find(v=>/natural|neural|premium|enhanced/i.test(v.name)) || pref[0] || null;
+}
+function speak(text, lang, rate){
+  return new Promise(res=>{
+    if(!synth) return res();
+    if(lang.startsWith("zh") && voices.length && !voices.some(v=>/^zh/i.test(v.lang))) return res();
+    const u = new SpeechSynthesisUtterance(text.replace(/ — .*/, m=>", "+m.slice(3)));
+    u.lang = lang; u.rate = rate;
+    const v = pickVoice(lang.slice(0,2)); if(v) u.voice = v;
+    u.onend = res; u.onerror = res;
+    synth.speak(u);
+  });
+}
+const sleep = ms => new Promise(r=>setTimeout(r,ms));
+
+/* ---------- 播放器 ---------- */
+const sceneSel = $("optScene");
+sceneSel.innerHTML = '<option value="all">全部场景连播</option>' + SCENES.map(s=>`<option value="${s.id}">${s.name}</option>`).join("");
+sceneSel.value = store.get("scene","hello");
+
+let queue = [], idx = store.get("idx",0), playing = false, runId = 0;
+function buildQueue(){
+  const id = sceneSel.value;
+  queue = id==="all" ? SCENES.flatMap(s=>s.items) : (SCENES.find(s=>s.id===id)||SCENES[0]).items;
+  if(idx >= queue.length) idx = 0;
+}
+function show(){
+  const [en,zh] = queue[idx];
+  $("nowEn").textContent = en; $("nowZh").textContent = zh;
+  $("pos").textContent = `${idx+1} / ${queue.length}`;
+  store.set("idx",idx);
+}
+function setPlayIcon(){
+  $("playIcon").innerHTML = playing ? '<path d="M6 4h4v16H6zM14 4h4v16h-4z"/>' : '<path d="M7 4v16l13-8z"/>';
+  $("play").setAttribute("aria-label", playing ? "暂停" : "播放");
+}
+async function run(my){
+  while(playing && my===runId){
+    show();
+    const [en,zh] = queue[idx];
+    const rate = +$("optRate").value, rep = +$("optRepeat").value, pause = +$("optPause").value, zhOn = $("optZh").value==="1";
+    for(let r=0; r<rep; r++){
+      await speak(en,"en-US",rate); if(my!==runId) return;
+      await sleep(pause);           if(my!==runId) return;
+      if(r===0 && zhOn){ await speak(zh,"zh-CN",1.05); if(my!==runId) return; await sleep(800); if(my!==runId) return; }
+    }
+    await sleep(1200); if(my!==runId) return;
+    idx = (idx+1) % queue.length;
+  }
+}
+function stopSpeech(){ runId++; if(synth) synth.cancel(); }
+function start(){ stopSpeech(); $("audio").pause(); playing = true; setPlayIcon(); run(runId); }
+$("play").onclick = ()=>{ if(playing){ playing=false; stopSpeech(); setPlayIcon(); } else start(); };
+$("next").onclick = ()=>{ idx=(idx+1)%queue.length; playing ? start() : show(); };
+$("prev").onclick = ()=>{ idx=(idx-1+queue.length)%queue.length; playing ? start() : show(); };
+sceneSel.onchange = ()=>{ store.set("scene",sceneSel.value); idx=0; buildQueue(); playing ? start() : show(); };
+buildQueue(); show();
+
+/* ---------- 句库 ---------- */
+let current = store.get("tab","hello");
+function renderTabs(){
+  $("tabs").innerHTML = SCENES.map(s=>`<button class="tab" role="tab" id="tab-${s.id}" aria-selected="${s.id===current}" data-id="${s.id}">${s.name} <span style="opacity:.6">${s.items.length}</span></button>`).join("");
+  const s = SCENES.find(x=>x.id===current) || SCENES[0];
+  $("sceneNote").textContent = s.note;
+  $("list").innerHTML = s.items.map((p,i)=>`<li><button class="say" data-i="${i}" aria-label="朗读 ${p[0]}">${ICON_SAY}</button><div><div class="en">${p[0]}</div><div class="zh">${p[1]}</div></div></li>`).join("");
+}
+$("tabs").onclick = e=>{ const b=e.target.closest(".tab"); if(!b) return; current=b.dataset.id; store.set("tab",current); renderTabs(); };
+$("list").onclick = e=>{
+  const b=e.target.closest(".say"); if(!b) return;
+  if(playing){ playing=false; setPlayIcon(); }
+  stopSpeech();
+  const s = SCENES.find(x=>x.id===current);
+  speak(s.items[+b.dataset.i][0],"en-US",+$("optRate").value);
+};
+renderTabs();
+
+/* ---------- 英语广播 ---------- */
+const STAGE = {1:"零基础", 2:"入门", 3:"进阶"};
+const esc = s => String(s).replace(/[&<>"]/g, ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[ch]));
+const audio = $("audio");
+const PL = window.PLAYLIST;
+const fmt = s => { s = Math.max(0, Math.floor(s||0)); const h = Math.floor(s/3600), m = Math.floor(s%3600/60), x = String(s%60).padStart(2,"0"); return h ? `${h}:${String(m).padStart(2,"0")}:${x}` : `${m}:${x}`; };
+let rState = store.get("radio", {ch:null, ep:0, t:0});
+let done = store.get("radioDone", {});
+let viewCh = null;
+
+function channel(id){ return PL.channels.find(c=>c.id===id); }
+function renderChannels(){
+  $("channels").innerHTML = PL.channels.map(c=>`<button class="channel" data-id="${c.id}" aria-pressed="${c.id===viewCh}">
+    <span class="cmeta"><span class="lv">${STAGE[c.stage]}</span>${c.org} · ${c.episodes.length} 期</span>
+    <span class="cname">${esc(c.name)}</span><span class="cdesc">${esc(c.desc)}</span></button>`).join("");
+}
+function renderEpisodes(){
+  const c = channel(viewCh);
+  $("epHead").textContent = c.name;
+  $("epUpdated").textContent = `列表更新于 ${PL.updated}，最新一期 ${c.episodes[0]?.d || "-"}`;
+  $("eplist").innerHTML = c.episodes.map((e,i)=>{
+    const on = rState.ch===c.id && rState.ep===i, key = e.u;
+    return `<li><button class="ep${on?" on":""}${done[key]?" done":""}" data-i="${i}">
+      <span class="n">${on && !audio.paused ? "▶" : i+1}</span><span class="t">${esc(e.t)}</span>
+      <span class="d">${e.s ? fmt(e.s) : ""}<br>${e.d}</span></button></li>`;
+  }).join("");
+}
+function loadEp(chId, i, autoplay, at){
+  const c = channel(chId); if(!c || !c.episodes.length) return;
+  i = (i + c.episodes.length) % c.episodes.length;
+  const e = c.episodes[i];
+  rState = {ch:chId, ep:i, t:at||0}; store.set("radio", rState);
+  $("rWarn").hidden = true;
+  audio.src = e.u; audio.playbackRate = +$("rRate").value;
+  if(at) audio.addEventListener("loadedmetadata", ()=>{ audio.currentTime = at; }, {once:true});
+  $("rChannel").textContent = `${c.org} · ${c.name} · 第 ${i+1} / ${c.episodes.length} 期`;
+  $("rTitle").textContent = e.t;
+  $("rDesc").textContent = e.d;
+  $("rDur").textContent = fmt(e.s);
+  $("rSeek").max = e.s || 100; $("rSeek").value = at||0; $("rCur").textContent = fmt(at);
+  if("mediaSession" in navigator) navigator.mediaSession.metadata = new MediaMetadata({title:e.t, artist:`${c.org} · ${c.name}`, album:"通勤英语"});
+  if(autoplay) audio.play().catch(()=>{});
+  if(viewCh===chId) renderEpisodes();
+}
+function rIcon(){
+  $("rPlayIcon").innerHTML = audio.paused ? '<path d="M7 4v16l13-8z"/>' : '<path d="M6 4h4v16H6zM14 4h4v16h-4z"/>';
+  $("rPlay").setAttribute("aria-label", audio.paused ? "播放" : "暂停");
+  if(viewCh===rState.ch) renderEpisodes();
+}
+
+if(!PL || !PL.channels?.length){
+  $("rTitle").textContent = "还没有节目列表";
+  $("rWarn").textContent = "没找到 playlist.js。在本文件夹运行 python update_playlist.py 生成节目列表后刷新页面。";
+  $("rWarn").hidden = false;
+} else {
+  viewCh = channel(rState.ch) ? rState.ch : PL.channels[0].id;
+  renderChannels(); renderEpisodes();
+  if(channel(rState.ch)) loadEp(rState.ch, rState.ep, false, rState.t);
+  else { $("rTitle").textContent = "选一期节目开始"; $("rChannel").textContent = "下方节目列表"; }
+
+  $("channels").onclick = e=>{ const b=e.target.closest(".channel"); if(!b) return; viewCh=b.dataset.id; renderChannels(); renderEpisodes(); };
+  $("eplist").onclick = e=>{
+    const b=e.target.closest(".ep"); if(!b) return;
+    const i=+b.dataset.i;
+    if(rState.ch===viewCh && rState.ep===i && audio.src){ audio.paused ? audio.play() : audio.pause(); return; }
+    loadEp(viewCh, i, true);
+  };
+  $("rPlay").onclick = ()=>{
+    if(!audio.src){ loadEp(viewCh, 0, true); return; }
+    audio.paused ? audio.play().catch(()=>{}) : audio.pause();
+  };
+  $("rNext").onclick = ()=> rState.ch && loadEp(rState.ch, rState.ep+1, true);
+  $("rPrev").onclick = ()=> rState.ch && loadEp(rState.ch, rState.ep-1, true);
+  $("rBack").onclick = ()=>{ audio.currentTime = Math.max(0, audio.currentTime-15); };
+  $("rFwd").onclick = ()=>{ audio.currentTime = audio.currentTime+30; };
+  $("rRate").onchange = ()=>{ audio.playbackRate = +$("rRate").value; };
+  $("rSeek").oninput = ()=>{ audio.currentTime = +$("rSeek").value; };
+
+  let lastSave = 0;
+  audio.addEventListener("timeupdate", ()=>{
+    $("rCur").textContent = fmt(audio.currentTime);
+    if(document.activeElement !== $("rSeek")) $("rSeek").value = audio.currentTime;
+    if(Date.now()-lastSave > 5000){ lastSave = Date.now(); rState.t = audio.currentTime; store.set("radio", rState); }
+  });
+  audio.addEventListener("loadedmetadata", ()=>{ if(isFinite(audio.duration)){ $("rSeek").max = audio.duration; $("rDur").textContent = fmt(audio.duration); } audio.playbackRate = +$("rRate").value; });
+  audio.addEventListener("play", ()=>{ if(playing){ playing=false; stopSpeech(); setPlayIcon(); } rIcon(); });
+  audio.addEventListener("pause", rIcon);
+  audio.addEventListener("ended", ()=>{
+    const e = channel(rState.ch).episodes[rState.ep];
+    done[e.u] = 1; store.set("radioDone", done);
+    const mode = $("rAuto").value;
+    if(mode==="next") loadEp(rState.ch, rState.ep+1, true);
+    else if(mode==="repeat") loadEp(rState.ch, rState.ep, true);
+    else { rState.t = 0; store.set("radio", rState); rIcon(); }
+  });
+  audio.addEventListener("error", ()=>{
+    if(!audio.src) return;
+    $("rWarn").textContent = "这一期加载失败（网络不稳或节目已下架），3 秒后自动跳到下一期。";
+    $("rWarn").hidden = false;
+    setTimeout(()=>{ if(audio.error) loadEp(rState.ch, rState.ep+1, true); }, 3000);
+  });
+
+  if("mediaSession" in navigator){
+    const ms = navigator.mediaSession;
+    ms.setActionHandler("play", ()=>audio.play());
+    ms.setActionHandler("pause", ()=>audio.pause());
+    ms.setActionHandler("nexttrack", ()=>$("rNext").click());
+    ms.setActionHandler("previoustrack", ()=>$("rPrev").click());
+    try{ ms.setActionHandler("seekbackward", ()=>$("rBack").click()); ms.setActionHandler("seekforward", ()=>$("rFwd").click()); }catch(e){}
+  }
+}
+
+/* ---------- 路线 ---------- */
+$("weeks").innerHTML = WEEKS.map((w,i)=>`<div class="week"><div class="wk">W${i+1}</div><b>${w[0]}</b><p>${w[1]}</p></div>`).join("");
+</script>

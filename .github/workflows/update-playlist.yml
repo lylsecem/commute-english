@@ -1,0 +1,25 @@
+name: 每周更新节目列表
+
+on:
+  schedule:
+    - cron: "0 20 * * 0"   # 每周日 20:00 UTC = 北京时间周一 04:00
+  workflow_dispatch:        # 也可以在 Actions 页面手动运行
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python update_playlist.py
+      - name: 有变化就提交
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898+github-actions[bot]@users.noreply.github.com"
+          git add playlist.js
+          git diff --cached --quiet || git commit -m "更新节目列表" && git push
